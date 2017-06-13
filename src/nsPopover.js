@@ -2,6 +2,7 @@
   'use strict';
 
   var $el = angular.element;
+  var $popovers = [];
   var globalId = 0;
   var isDef = angular.isDefined;
   var module = angular.module('nsPopover', []);
@@ -20,6 +21,7 @@
       plain: 'false',
       popupDelay: 0,
       restrictBounds: false,
+      autocorrectPlacement: false, // исправлять ли положение выпадашки, если оно не вошло в контейнер
       scopeEvent: null,
       template: '',
       theme: 'ns-popover-list-theme',
@@ -88,6 +90,7 @@
             plain: toBoolean(attrs.nsPopoverPlain || defaults.plain),
             popupDelay: attrs.nsPopoverPopupDelay || defaults.popupDelay,
             restrictBounds: Boolean(attrs.nsPopoverRestrictBounds) || defaults.restrictBounds,
+            autocorrectPlacement: Boolean(attrs.nsPopoverAutocorrectPlacement) || defaults.autocorrectPlacement,
             scopeEvent: attrs.nsPopoverScopeEvent || defaults.scopeEvent,
             template: attrs.nsPopoverTemplate || defaults.template,
             theme: attrs.nsPopoverTheme || defaults.theme,
@@ -234,6 +237,28 @@
             return $templateCache.get(template) || $http.get(template, { cache : true });
           }
 
+          function getCorretPlacement(popover, currPlacement, rect) {
+            var popoverRect, containerRect, result, popoverTop, popoverBottom ;
+
+            popoverRect = getBoundingClientRect(popover[0]);
+            containerRect = getBoundingClientRect($container[0]);
+            result = currPlacement;
+
+            if (currPlacement === 'top') {
+              popoverTop = rect.top - popoverRect.height;
+              if (containerRect.top > popoverTop) {
+                result = 'bottom'
+              }
+            } else if (currPlacement === 'bottom') {
+              popoverBottom = rect.bottom + popoverRect.height;
+              if (popoverBottom > containerRect.bottom) {
+                result = 'top'
+              }
+            }
+
+            return result;
+          }
+
           /**
            * Move the popover to the |placement| position of the object located on the |rect|.
            *
@@ -368,6 +393,8 @@
              * @param e {Event}  The event which caused the popover to be shown.
              */
             display: function(delay, e) {
+              var newPlacement;
+
               // Disable popover if ns-popover value is false
               if ($parse(attrs.nsPopover)(scope) === false) {
                 return;
@@ -403,6 +430,21 @@
                 }
 
                 move($popover, placement_, align_, elmRect, $triangle);
+
+                // >> добавлено
+                newPlacement = placement_;
+                if (options.autocorrectPlacement === true) {
+                  newPlacement = getCorretPlacement($popover, placement_, elmRect);
+                  if (placement_ !== newPlacement) {
+                    move($popover, newPlacement, align_, elmRect, $triangle);
+                  }
+                }
+                ['top', 'bottom', 'left', 'right'].forEach(function(place) {
+                  $popover.removeClass('ns-popover-' + place + '-placement')
+                });
+                $popover.addClass('ns-popover-' + newPlacement + '-placement');
+                // << добавлено
+
                 addEventListeners();
 
                 // Hide the popover without delay on the popover click events.
@@ -421,7 +463,13 @@
                 }
 
                 // Call the open callback
-                options.onOpen(scope);
+                // >> изменено
+                options.onOpen(scope, {
+                  options: {
+                    placement: newPlacement
+                  }
+                });
+                // << изменено
               }, delay*1000);
             },
 
@@ -502,6 +550,7 @@
             .css('position', 'absolute')
             .css('display', 'none')
           ;
+          $popovers.push($popover);
 
           // Allow closing the popover programatically.
           scope.hidePopover = function() {
@@ -511,7 +560,7 @@
           // Hide popovers that are associated with the passed group.
           scope.$on('ns:popover:hide', function(ev, group) {
             if (options.group === group) {
-                scope.hidePopover();
+              scope.hidePopover();
             }
           });
 
@@ -529,16 +578,16 @@
               display
             );
 
-          // Display the popover when a message is broadcasted on the
-          // scope if `scope-event` was given.
+            // Display the popover when a message is broadcasted on the
+            // scope if `scope-event` was given.
           } else if (angular.isString(options.scopeEvent)) {
             unregisterDisplayMethod = scope.$on(
               options.scopeEvent,
               display
             )
 
-          // Otherwise just display the popover whenever the event that was
-          // passed to the `trigger` attribute occurs on the element.
+            // Otherwise just display the popover whenever the event that was
+            // passed to the `trigger` attribute occurs on the element.
           } else {
             elm.on(options.trigger, display);
             unregisterDisplayMethod = function() {

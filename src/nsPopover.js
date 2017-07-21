@@ -10,7 +10,6 @@
   module.provider('nsPopover', function () {
     var defaults = {
       angularEvent: null,
-      angularHideEvent: null,
       container: 'body',
       hideOnButtonClick: true,
       hideOnInsideClick: false,
@@ -24,6 +23,7 @@
       restrictBounds: false,
       autocorrectPlacement: false, // исправлять ли положение выпадашки, если оно не вошло в контейнер
       scopeEvent: null,
+      scopeHideEvent: null,
       template: '',
       theme: 'ns-popover-list-theme',
       timeout: 1.5,
@@ -79,7 +79,6 @@
           var match;
           var options = {
             angularEvent: attrs.nsPopoverAngularEvent || defaults.angularEvent,
-            angularHideEvent: attrs.nsPopoverAngularHideEvent || defaults.angularHideEvent,
             container: attrs.nsPopoverContainer || defaults.container,
             group: attrs.nsPopoverGroup,
             hideOnButtonClick: toBoolean(attrs.nsPopoverHideOnButtonClick || defaults.hideOnButtonClick),
@@ -94,6 +93,7 @@
             restrictBounds: Boolean(attrs.nsPopoverRestrictBounds) || defaults.restrictBounds,
             autocorrectPlacement: Boolean(attrs.nsPopoverAutocorrectPlacement) || defaults.autocorrectPlacement,
             scopeEvent: attrs.nsPopoverScopeEvent || defaults.scopeEvent,
+            scopeHideEvent: attrs.nsPopoverScopeHideEvent || defaults.scopeHideEvent,
             template: attrs.nsPopoverTemplate || defaults.template,
             theme: attrs.nsPopoverTheme || defaults.theme,
             timeout: attrs.nsPopoverTimeout || defaults.timeout,
@@ -585,12 +585,13 @@
           scope.$on('$destroy', function() {
             $popover.remove();
             unregisterDisplayMethod();
+            unregisterHideMethod();
           });
 
           // >> добавлено
-          if (angular.isString(options.angularHideEvent)) {
-            unregisterDisplayMethod = $rootScope.$on(
-              options.angularHideEvent,
+          if (angular.isString(options.scopeHideEvent)) {
+            unregisterHideMethod = scope.$on(
+              options.scopeHideEvent,
               hide
             );
           }

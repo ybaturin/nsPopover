@@ -10,6 +10,7 @@
   module.provider('nsPopover', function () {
     var defaults = {
       angularEvent: null,
+      angularHideEvent: null,
       container: 'body',
       hideOnButtonClick: true,
       hideOnInsideClick: false,
@@ -78,6 +79,7 @@
           var match;
           var options = {
             angularEvent: attrs.nsPopoverAngularEvent || defaults.angularEvent,
+            angularHideEvent: attrs.nsPopoverAngularHideEvent || defaults.angularHideEvent,
             container: attrs.nsPopoverContainer || defaults.container,
             group: attrs.nsPopoverGroup,
             hideOnButtonClick: toBoolean(attrs.nsPopoverHideOnButtonClick || defaults.hideOnButtonClick),
@@ -101,6 +103,7 @@
           var placement_;
           var unregisterActivePopoverListeners;
           var unregisterDisplayMethod;
+          var unregisterHideMethod;
 
           if (options.mouseRelative) {
             options.mouseRelativeX = options.mouseRelative.indexOf('x') !== -1;
@@ -189,6 +192,20 @@
             hider_.cancel();
             displayer_.display(options.popupDelay, e);
           }
+
+          // >> добавлено
+          function hide(e) {
+            if (
+              angular.isObject(e) &&
+              false !== options.triggerPrevent
+            ) {
+              e.preventDefault();
+            }
+
+            displayer_.cancel();
+            hider_.hide(0);
+          }
+          // << добавлено
 
           function getBoundingClientRect(elm) {
             var w = window;
@@ -569,6 +586,15 @@
             $popover.remove();
             unregisterDisplayMethod();
           });
+
+          // >> добавлено
+          if (angular.isString(options.angularHideEvent)) {
+            unregisterDisplayMethod = $rootScope.$on(
+              options.angularHideEvent,
+              hide
+            );
+          }
+          // << добавлено
 
           // Display the popover when a message is broadcasted on the
           // $rootScope if `angular-event` was given.

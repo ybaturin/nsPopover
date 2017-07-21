@@ -29,6 +29,7 @@
       timeout: 1.5,
       trigger: 'click',
       triggerPrevent: true,
+      controlVisibleByEvents: false,
     };
 
     this.setDefaults = function(newDefaults) {
@@ -78,6 +79,7 @@
           var hider_;
           var match;
           var options = {
+            controlVisibleByEvents: attrs.nsPopoverControlVisibleByEvents || defaults.controlVisibleByEvents,
             angularEvent: attrs.nsPopoverAngularEvent || defaults.angularEvent,
             container: attrs.nsPopoverContainer || defaults.container,
             group: attrs.nsPopoverGroup,
@@ -111,6 +113,10 @@
           }
 
           function addEventListeners() {
+            if (options.controlVisibleByEvents) {
+              return;
+            }
+
             function cancel() {
               hider_.cancel();
             }

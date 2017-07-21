@@ -383,7 +383,9 @@
           }
 
           function removeEventListeners() {
-            unregisterActivePopoverListeners();
+            if (unregisterActivePopoverListeners) {
+              unregisterActivePopoverListeners();
+            }
           }
 
           function toBoolean(value) {

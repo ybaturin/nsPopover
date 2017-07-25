@@ -14,6 +14,7 @@
       hideOnButtonClick: true,
       hideOnInsideClick: false,
       hideOnOutsideClick: true,
+      hideOnOutsideMousedown: true,
       mouseRelative: '',
       onClose: angular.noop,
       onOpen: angular.noop,
@@ -86,6 +87,7 @@
             hideOnButtonClick: toBoolean(attrs.nsPopoverHideOnButtonClick || defaults.hideOnButtonClick),
             hideOnInsideClick: toBoolean(attrs.nsPopoverHideOnInsideClick || defaults.hideOnInsideClick),
             hideOnOutsideClick: toBoolean(attrs.nsPopoverHideOnOutsideClick || defaults.hideOnOutsideClick),
+            hideOnOutsideMousedown: toBoolean(attrs.nsPopoverHideOnOutsideMousedown || defaults.hideOnOutsideMousedown),
             mouseRelative: attrs.nsPopoverMouseRelative,
             onClose: $parse(attrs.nsPopoverOnClose) || defaults.onClose,
             onOpen: $parse(attrs.nsPopoverOnOpen) || defaults.onOpen,
@@ -481,6 +483,12 @@
                 if (true === options.hideOnOutsideClick) {
                   $document.on('click', outsideClickHandler);
                 }
+
+                // >> добавлено
+                if (true === options.hideOnOutsideMousedown) {
+                  $document.on('mousedown', outsideClickHandler);
+                }
+                // << добавлено
 
                 // Hide the popover without delay on the button click events.
                 if (true === options.hideOnButtonClick) {

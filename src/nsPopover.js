@@ -580,6 +580,7 @@
           $popover = $el('<div id="nspopover-' + globalId +'"></div>')
             .addClass('ns-popover-' + placement_ + '-placement')
             .addClass('ns-popover-' + align_ + '-align')
+            .addClass('ns-popover-container')
             .css('position', 'absolute')
             .css('display', 'none')
           ;

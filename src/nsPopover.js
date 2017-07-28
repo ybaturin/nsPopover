@@ -601,7 +601,9 @@
           scope.$on('$destroy', function() {
             $popover.remove();
             unregisterDisplayMethod();
-            unregisterHideMethod();
+            if (unregisterHideMethod) {
+              unregisterHideMethod();
+            }
           });
 
           // >> добавлено

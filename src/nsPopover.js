@@ -435,7 +435,12 @@
 
               // hide any popovers being displayed
               if (options.group) {
-                $rootScope.$broadcast('ns:popover:hide', options.group);
+                // >> изменено
+                $rootScope.$broadcast('ns:popover:hide', {
+                  group: options.group,
+                  fromScope: scope
+                });
+                // << изменено
               }
 
               displayer_.id_ = $timeout(function() {
@@ -592,11 +597,16 @@
           };
 
           // Hide popovers that are associated with the passed group.
-          scope.$on('ns:popover:hide', function(ev, group) {
-            if (options.group === group) {
+          // >> изменено
+          scope.$on('ns:popover:hide', function(ev, data) {
+            var group = data.group;
+            var fromScope = data.fromScope;
+
+            if (options.group === group && fromScope !== scope) {
               scope.hidePopover();
             }
           });
+          // << изменено
 
           // Clean up after yourself.
           scope.$on('$destroy', function() {

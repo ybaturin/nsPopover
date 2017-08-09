@@ -599,6 +599,10 @@
           // Hide popovers that are associated with the passed group.
           // >> изменено
           scope.$on('ns:popover:hide', function(ev, data) {
+            if (!data) {
+              return scope.hidePopover();
+            }
+
             var group = data.group;
             var fromScope = data.fromScope;
 
